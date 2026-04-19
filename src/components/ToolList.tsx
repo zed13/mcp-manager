@@ -10,7 +10,6 @@ interface Props {
 }
 
 function isToolEnabled(toolKey: string, allowedTools: string[]): boolean {
-  if (allowedTools.length === 0) return true;
   return allowedTools.includes(toolKey);
 }
 

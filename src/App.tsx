@@ -5,7 +5,7 @@ import { ToolList } from './components/ToolList.js';
 import { StatusBar } from './components/StatusBar.js';
 import { readClaudeJson, getGlobalServers, getProjectServers, getAllowedTools, saveAllowedTools } from './lib/config.js';
 import { connectServer } from './lib/mcp-client.js';
-import type { AppState, McpServer, McpTool } from './lib/types.js';
+import type { AppState, McpServer } from './lib/types.js';
 
 interface Props {
   projectPath: string;
@@ -129,17 +129,9 @@ export function App({ projectPath }: Props) {
           const tool = server.tools[selectedToolIndex];
           if (!tool) return s;
           const toolKey = `mcp__${server.name}__${tool.name}`;
-          let allowedTools: string[];
-          if (s.allowedTools.length === 0) {
-            // All enabled by default — disable this one by listing all others
-            allowedTools = server.tools
-              .filter((_: McpTool, i: number) => i !== selectedToolIndex)
-              .map((t: McpTool) => `mcp__${server.name}__${t.name}`);
-          } else if (s.allowedTools.includes(toolKey)) {
-            allowedTools = s.allowedTools.filter((t: string) => t !== toolKey);
-          } else {
-            allowedTools = [...s.allowedTools, toolKey];
-          }
+          const allowedTools = s.allowedTools.includes(toolKey)
+            ? s.allowedTools.filter((t: string) => t !== toolKey)
+            : [...s.allowedTools, toolKey];
           return { ...s, allowedTools, isDirty: true };
         }
       }

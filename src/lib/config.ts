@@ -9,9 +9,9 @@ export function readClaudeJson(): ClaudeJson {
   const raw = fs.readFileSync(CLAUDE_JSON_PATH, 'utf-8');
   const parsed = JSON.parse(raw);
   return {
+    ...parsed,
     mcpServers: parsed.mcpServers ?? {},
     projects: parsed.projects ?? {},
-    ...parsed,
   };
 }
 
