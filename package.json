@@ -20,6 +20,9 @@
   },
   "keywords": ["mcp", "claude", "tui", "cli"],
   "author": "Denis Danilchuk",
+  "engines": {
+    "node": ">=22"
+  },
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/zed13/mcp-manager/issues"
