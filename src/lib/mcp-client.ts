@@ -5,7 +5,8 @@ import type { McpServerConfig, McpTool } from './types.js';
 
 const TIMEOUT_MS = 10000;
 
-export async function connectServer(name: string, config: McpServerConfig): Promise<McpTool[]> {
+export async function connectServer(name: string, config: McpServerConfig, signal?: AbortSignal): Promise<McpTool[]> {
+  if (signal?.aborted) throw new Error('Aborted');
   const client = new Client({ name: 'mcp-manager', version: '1.0.0' });
 
   let transport;
@@ -36,8 +37,12 @@ export async function connectServer(name: string, config: McpServerConfig): Prom
     timer = setTimeout(() => reject(new Error(`Timeout connecting to ${name}`)), TIMEOUT_MS);
   });
 
+  const abort = new Promise<never>((_, reject) => {
+    signal?.addEventListener('abort', () => reject(new Error('Aborted')), { once: true });
+  });
+
   try {
-    return await Promise.race([operation(), timeout]);
+    return await Promise.race([operation(), timeout, abort]);
   } finally {
     clearTimeout(timer);
     await client.close().catch(() => {});

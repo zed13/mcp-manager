@@ -52,6 +52,7 @@ export function App({ projectPath }: Props) {
 
   useEffect(() => {
     let cancelled = false;
+    const abortController = new AbortController();
 
     async function load() {
       let config;
@@ -96,7 +97,7 @@ export function App({ projectPath }: Props) {
 
       await Promise.all(servers.map(async (server) => {
         try {
-          const tools = await connectServer(server.name, server.config);
+          const tools = await connectServer(server.name, server.config, abortController.signal);
           if (cancelled) return;
           setState((s: AppState) => ({
             ...s,
@@ -121,7 +122,10 @@ export function App({ projectPath }: Props) {
       }));
     }
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      abortController.abort();
+    };
   }, [projectPath]);
 
   useInput(useCallback((input: string, key: Key) => {
