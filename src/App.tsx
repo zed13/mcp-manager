@@ -36,11 +36,11 @@ export function App({ projectPath }: Props) {
   const [statusMessage, setStatusMessage] = useState('');
   const statusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  const showStatus = (msg: string, durationMs = 3000) => {
+  const showStatus = useCallback((msg: string, durationMs = 3000) => {
     clearTimeout(statusTimerRef.current);
     setStatusMessage(msg);
     statusTimerRef.current = setTimeout(() => setStatusMessage(''), durationMs);
-  };
+  }, []);
 
   useEffect(() => {
     setSelectedToolIndex(0);
