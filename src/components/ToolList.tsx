@@ -13,6 +13,10 @@ function isToolEnabled(toolKey: string, allowedTools: string[]): boolean {
   return allowedTools.includes(toolKey);
 }
 
+function truncateDesc(desc: string, max: number): string {
+  return desc.length > max ? desc.slice(0, max - 1) + '…' : desc;
+}
+
 export function ToolList({ server, allowedTools, selectedToolIndex, focused }: Props) {
   const title = server ? `Tools: ${server.name}` : 'Tools';
 
@@ -29,14 +33,16 @@ export function ToolList({ server, allowedTools, selectedToolIndex, focused }: P
         const toolKey = `mcp__${server.name}__${tool.name}`;
         const enabled = isToolEnabled(toolKey, allowedTools);
         const isSelected = i === selectedToolIndex;
+        const desc = tool.description ? truncateDesc(tool.description, 50) : '';
         return (
-          <Text
-            key={`${i}-${tool.name}`}
-            color={isSelected ? 'cyan' : 'white'}
-            bold={isSelected}
-          >
-            {isSelected ? '▶ ' : '  '}[{enabled ? '✓' : ' '}] {tool.name}
-          </Text>
+          <Box key={`${i}-${tool.name}`} flexDirection="column">
+            <Text color={isSelected ? 'cyan' : 'white'} bold={isSelected}>
+              {isSelected ? '▶ ' : '  '}[{enabled ? '✓' : ' '}] {tool.name}
+            </Text>
+            {desc !== '' && (
+              <Text color="gray">      {desc}</Text>
+            )}
+          </Box>
         );
       })}
     </Box>
