@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Box, Text, useInput, useApp, Key } from 'ink';
 import { ServerList } from './components/ServerList.js';
 import { ToolList } from './components/ToolList.js';
@@ -24,7 +24,13 @@ export function App({ projectPath }: Props) {
     isDirty: false,
   });
 
+  const stateRef = useRef(state);
+  stateRef.current = state;
+
   const [selectedToolIndex, setSelectedToolIndex] = useState(0);
+  const selectedToolIndexRef = useRef(selectedToolIndex);
+  selectedToolIndexRef.current = selectedToolIndex;
+
   const [statusMessage, setStatusMessage] = useState('');
 
   useEffect(() => {
@@ -85,64 +91,47 @@ export function App({ projectPath }: Props) {
   }, [projectPath]);
 
   useInput(useCallback((input: string, key: Key) => {
-    setState((s: AppState) => {
-      const server = s.servers[s.selectedServerIndex];
-      const toolCount = server?.tools.length ?? 0;
+    const s = stateRef.current;
+    const toolIdx = selectedToolIndexRef.current;
+    const server = s.servers[s.selectedServerIndex];
+    const toolCount = server?.tools.length ?? 0;
 
-      if (key.tab) {
-        return { ...s, focusedPanel: s.focusedPanel === 'servers' ? 'tools' : 'servers' };
+    if (key.tab) {
+      setState(prev => ({ ...prev, focusedPanel: prev.focusedPanel === 'servers' ? 'tools' : 'servers' }));
+      return;
+    }
+
+    if (input === 'q' || input === 'Q') { exit(); return; }
+    if (input === 'g' || input === 'G') { setState(prev => ({ ...prev, mode: 'global' })); return; }
+    if (input === 'p' || input === 'P') { setState(prev => ({ ...prev, mode: 'project' })); return; }
+
+    if (input === 's' || input === 'S') {
+      saveAllowedTools(s.projectPath, s.allowedTools);
+      setState(prev => ({ ...prev, isDirty: false }));
+      setStatusMessage('Saved!');
+      setTimeout(() => setStatusMessage(''), 2000);
+      return;
+    }
+
+    if (s.focusedPanel === 'servers') {
+      if (key.upArrow) setState(prev => ({ ...prev, selectedServerIndex: Math.max(0, prev.selectedServerIndex - 1) }));
+      if (key.downArrow) setState(prev => ({ ...prev, selectedServerIndex: Math.min(prev.servers.length - 1, prev.selectedServerIndex + 1) }));
+    }
+
+    if (s.focusedPanel === 'tools') {
+      if (key.upArrow) setSelectedToolIndex(i => Math.max(0, i - 1));
+      if (key.downArrow) setSelectedToolIndex(i => Math.min(toolCount - 1, i + 1));
+      if (input === ' ' && server && toolCount > 0) {
+        const tool = server.tools[toolIdx];
+        if (!tool) return;
+        const toolKey = `mcp__${server.name}__${tool.name}`;
+        const allowedTools = s.allowedTools.includes(toolKey)
+          ? s.allowedTools.filter((t: string) => t !== toolKey)
+          : [...s.allowedTools, toolKey];
+        setState(prev => ({ ...prev, allowedTools, isDirty: true }));
       }
-
-      if (input === 'q' || input === 'Q') {
-        exit();
-        return s;
-      }
-
-      if (input === 'g' || input === 'G') {
-        return { ...s, mode: 'global' };
-      }
-
-      if (input === 'p' || input === 'P') {
-        return { ...s, mode: 'project' };
-      }
-
-      if (input === 's' || input === 'S') {
-        saveAllowedTools(s.projectPath, s.allowedTools);
-        setStatusMessage('Saved!');
-        setTimeout(() => setStatusMessage(''), 2000);
-        return { ...s, isDirty: false };
-      }
-
-      if (s.focusedPanel === 'servers') {
-        if (key.upArrow) {
-          return { ...s, selectedServerIndex: Math.max(0, s.selectedServerIndex - 1) };
-        }
-        if (key.downArrow) {
-          return { ...s, selectedServerIndex: Math.min(s.servers.length - 1, s.selectedServerIndex + 1) };
-        }
-      }
-
-      if (s.focusedPanel === 'tools') {
-        if (key.upArrow) {
-          setSelectedToolIndex(i => Math.max(0, i - 1));
-        }
-        if (key.downArrow) {
-          setSelectedToolIndex(i => Math.min(toolCount - 1, i + 1));
-        }
-        if (input === ' ' && server && toolCount > 0) {
-          const tool = server.tools[selectedToolIndex];
-          if (!tool) return s;
-          const toolKey = `mcp__${server.name}__${tool.name}`;
-          const allowedTools = s.allowedTools.includes(toolKey)
-            ? s.allowedTools.filter((t: string) => t !== toolKey)
-            : [...s.allowedTools, toolKey];
-          return { ...s, allowedTools, isDirty: true };
-        }
-      }
-
-      return s;
-    });
-  }, [exit, selectedToolIndex]));
+    }
+  }, [exit]));
 
   const selectedServer = state.servers[state.selectedServerIndex];
 
