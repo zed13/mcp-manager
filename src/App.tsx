@@ -40,15 +40,19 @@ export function App({ projectPath }: Props) {
   }, [state.selectedServerIndex]);
 
   useEffect(() => {
+    let cancelled = false;
+
     async function load() {
       let config;
       try {
         config = readClaudeJson();
       } catch (err) {
+        if (cancelled) return;
         const error = err instanceof Error ? err.message : String(err);
         setStatusMessage(`Error reading ~/.claude.json: ${error}`);
         return;
       }
+      if (cancelled) return;
       const globalServers = getGlobalServers(config);
       const projectServers = getProjectServers(config, projectPath);
       const allowedTools = getAllowedTools(config, projectPath);
@@ -80,8 +84,10 @@ export function App({ projectPath }: Props) {
       }));
 
       for (const server of servers) {
+        if (cancelled) break;
         try {
           const tools = await connectServer(server.name, server.config);
+          if (cancelled) break;
           setState((s: AppState) => ({
             ...s,
             servers: s.servers.map((sv: McpServer) =>
@@ -91,6 +97,7 @@ export function App({ projectPath }: Props) {
             ),
           }));
         } catch (err) {
+          if (cancelled) break;
           const error = err instanceof Error ? err.message : String(err);
           setState((s: AppState) => ({
             ...s,
@@ -104,6 +111,7 @@ export function App({ projectPath }: Props) {
       }
     }
     load();
+    return () => { cancelled = true; };
   }, [projectPath]);
 
   useInput(useCallback((input: string, key: Key) => {
