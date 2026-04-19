@@ -28,6 +28,10 @@ export function App({ projectPath }: Props) {
   const [statusMessage, setStatusMessage] = useState('');
 
   useEffect(() => {
+    setSelectedToolIndex(0);
+  }, [state.selectedServerIndex]);
+
+  useEffect(() => {
     async function load() {
       const config = readClaudeJson();
       const globalServers = getGlobalServers(config);
