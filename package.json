@@ -1,7 +1,7 @@
 {
   "name": "mcp-manager",
   "version": "1.0.0",
-  "description": "",
+  "description": "TUI for managing MCP tool permissions in Claude Code (~/.claude.json)",
   "type": "module",
   "main": "index.js",
   "scripts": {
@@ -12,8 +12,8 @@
     "type": "git",
     "url": "git+https://github.com/zed13/mcp-manager.git"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": ["mcp", "claude", "tui", "cli"],
+  "author": "Denis Danilchuk",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/zed13/mcp-manager/issues"
