@@ -31,6 +31,17 @@ export function getAllowedTools(config: ClaudeJson, projectPath: string): string
   return config.projects?.[projectPath]?.allowedTools ?? [];
 }
 
+function atomicWrite(filePath: string, content: string): void {
+  const tmp = `${filePath}.tmp-${process.pid}`;
+  try {
+    fs.writeFileSync(tmp, content, 'utf-8');
+    fs.renameSync(tmp, filePath);
+  } catch (err) {
+    fs.rmSync(tmp, { force: true });
+    throw err;
+  }
+}
+
 export function saveAllowedTools(projectPath: string, tools: string[]): void {
   const raw = fs.readFileSync(CLAUDE_JSON_PATH, 'utf-8');
   const parsed = JSON.parse(raw);
@@ -39,12 +50,12 @@ export function saveAllowedTools(projectPath: string, tools: string[]): void {
   if (!parsed.projects[projectPath]) parsed.projects[projectPath] = {};
   parsed.projects[projectPath].allowedTools = tools;
 
-  fs.writeFileSync(CLAUDE_JSON_PATH, JSON.stringify(parsed, null, 2), 'utf-8');
+  atomicWrite(CLAUDE_JSON_PATH, JSON.stringify(parsed, null, 2));
 }
 
 export function saveGlobalAllowedTools(tools: string[]): void {
   const raw = fs.readFileSync(CLAUDE_JSON_PATH, 'utf-8');
   const parsed = JSON.parse(raw);
   parsed.allowedTools = tools;
-  fs.writeFileSync(CLAUDE_JSON_PATH, JSON.stringify(parsed, null, 2), 'utf-8');
+  atomicWrite(CLAUDE_JSON_PATH, JSON.stringify(parsed, null, 2));
 }
