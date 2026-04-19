@@ -152,15 +152,20 @@ export function App({ projectPath }: Props) {
     }
 
     if (input === 's' || input === 'S') {
-      if (s.mode === 'global') {
-        saveGlobalAllowedTools(s.allowedTools);
-        setState(prev => ({ ...prev, globalAllowedTools: prev.allowedTools, isDirty: false }));
-      } else {
-        saveAllowedTools(s.projectPath, s.allowedTools);
-        setState(prev => ({ ...prev, projectAllowedTools: prev.allowedTools, isDirty: false }));
+      try {
+        if (s.mode === 'global') {
+          saveGlobalAllowedTools(s.allowedTools);
+          setState(prev => ({ ...prev, globalAllowedTools: prev.allowedTools, isDirty: false }));
+        } else {
+          saveAllowedTools(s.projectPath, s.allowedTools);
+          setState(prev => ({ ...prev, projectAllowedTools: prev.allowedTools, isDirty: false }));
+        }
+        setStatusMessage('Saved!');
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        setStatusMessage(`Save failed: ${msg}`);
       }
-      setStatusMessage('Saved!');
-      setTimeout(() => setStatusMessage(''), 2000);
+      setTimeout(() => setStatusMessage(''), 3000);
       return;
     }
 
