@@ -47,6 +47,10 @@ export function App({ projectPath }: Props) {
   }, [state.selectedServerIndex]);
 
   useEffect(() => {
+    return () => { clearTimeout(statusTimerRef.current); };
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
 
     async function load() {
@@ -175,7 +179,7 @@ export function App({ projectPath }: Props) {
       return;
     }
 
-    if (s.focusedPanel === 'servers') {
+    if (s.focusedPanel === 'servers' && s.servers.length > 0) {
       if (key.upArrow) setState(prev => ({ ...prev, selectedServerIndex: Math.max(0, prev.selectedServerIndex - 1) }));
       if (key.downArrow) setState(prev => ({ ...prev, selectedServerIndex: Math.min(prev.servers.length - 1, prev.selectedServerIndex + 1) }));
     }
