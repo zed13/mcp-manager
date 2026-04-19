@@ -6,7 +6,12 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsx src/index.tsx",
-    "typecheck": "tsc --noEmit"
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "start": "node dist/index.js"
+  },
+  "bin": {
+    "mcp-manager": "./dist/index.js"
   },
   "repository": {
     "type": "git",
