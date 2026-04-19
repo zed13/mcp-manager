@@ -34,6 +34,13 @@ export function App({ projectPath }: Props) {
   selectedToolIndexRef.current = selectedToolIndex;
 
   const [statusMessage, setStatusMessage] = useState('');
+  const statusTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  const showStatus = (msg: string, durationMs = 3000) => {
+    clearTimeout(statusTimerRef.current);
+    setStatusMessage(msg);
+    statusTimerRef.current = setTimeout(() => setStatusMessage(''), durationMs);
+  };
 
   useEffect(() => {
     setSelectedToolIndex(0);
@@ -49,7 +56,7 @@ export function App({ projectPath }: Props) {
       } catch (err) {
         if (cancelled) return;
         const error = err instanceof Error ? err.message : String(err);
-        setStatusMessage(`Error reading ~/.claude.json: ${error}`);
+        showStatus(`Error reading ~/.claude.json: ${error}`);
         return;
       }
       if (cancelled) return;
@@ -91,7 +98,7 @@ export function App({ projectPath }: Props) {
           setState((s: AppState) => ({
             ...s,
             servers: s.servers.map((sv: McpServer) =>
-              sv.name === server.name
+              sv.name === server.name && sv.origin === server.origin
                 ? { ...sv, tools, status: 'connected' as const }
                 : sv
             ),
@@ -102,7 +109,7 @@ export function App({ projectPath }: Props) {
           setState((s: AppState) => ({
             ...s,
             servers: s.servers.map((sv: McpServer) =>
-              sv.name === server.name
+              sv.name === server.name && sv.origin === server.origin
                 ? { ...sv, status: 'error' as const, error }
                 : sv
             ),
@@ -160,12 +167,11 @@ export function App({ projectPath }: Props) {
           saveAllowedTools(s.projectPath, s.allowedTools);
           setState(prev => ({ ...prev, projectAllowedTools: prev.allowedTools, isDirty: false }));
         }
-        setStatusMessage('Saved!');
+        showStatus('Saved!');
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        setStatusMessage(`Save failed: ${msg}`);
+        showStatus(`Save failed: ${msg}`);
       }
-      setTimeout(() => setStatusMessage(''), 3000);
       return;
     }
 
