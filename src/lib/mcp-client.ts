@@ -21,6 +21,8 @@ export async function connectServer(name: string, config: McpServerConfig): Prom
     });
   }
 
+  let timer: ReturnType<typeof setTimeout> | undefined;
+
   const operation = async () => {
     await client.connect(transport);
     const result = await client.listTools();
@@ -30,13 +32,14 @@ export async function connectServer(name: string, config: McpServerConfig): Prom
     }));
   };
 
-  const timeout = new Promise<never>((_, reject) =>
-    setTimeout(() => reject(new Error(`Timeout connecting to ${name}`)), TIMEOUT_MS)
-  );
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(`Timeout connecting to ${name}`)), TIMEOUT_MS);
+  });
 
   try {
     return await Promise.race([operation(), timeout]);
   } finally {
+    clearTimeout(timer);
     await client.close().catch(() => {});
   }
 }

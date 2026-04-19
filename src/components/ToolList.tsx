@@ -31,7 +31,7 @@ export function ToolList({ server, allowedTools, selectedToolIndex, focused }: P
         const isSelected = i === selectedToolIndex;
         return (
           <Text
-            key={tool.name}
+            key={`${i}-${tool.name}`}
             color={isSelected ? 'cyan' : 'white'}
             bold={isSelected}
           >
