@@ -51,6 +51,10 @@ Tool permissions use the format `mcp__<servername>__<toolname>` in `allowedTools
 
 Toggle with `G`/`P` keys. Mode is reflected in the status bar.
 
+## Git Commits
+
+Write commit messages that describe only what was done. Do not include AI-related messages, co-authored-by trailers, or any attribution to Claude or Anthropic.
+
 ### Key keyboard bindings
 
 | Key | Action |
