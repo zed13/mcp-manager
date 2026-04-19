@@ -33,7 +33,7 @@ export function ToolList({ server, allowedTools, selectedToolIndex, focused }: P
         const toolKey = `mcp__${server.name}__${tool.name}`;
         const enabled = isToolEnabled(toolKey, allowedTools);
         const isSelected = i === selectedToolIndex;
-        const desc = tool.description ? truncateDesc(tool.description, 50) : '';
+        const desc = isSelected && tool.description ? truncateDesc(tool.description, 55) : '';
         return (
           <Box key={`${i}-${tool.name}`} flexDirection="column">
             <Text color={isSelected ? 'cyan' : 'white'} bold={isSelected}>
