@@ -41,7 +41,14 @@ export function App({ projectPath }: Props) {
 
   useEffect(() => {
     async function load() {
-      const config = readClaudeJson();
+      let config;
+      try {
+        config = readClaudeJson();
+      } catch (err) {
+        const error = err instanceof Error ? err.message : String(err);
+        setStatusMessage(`Error reading ~/.claude.json: ${error}`);
+        return;
+      }
       const globalServers = getGlobalServers(config);
       const projectServers = getProjectServers(config, projectPath);
       const allowedTools = getAllowedTools(config, projectPath);
@@ -116,6 +123,8 @@ export function App({ projectPath }: Props) {
       setState(prev => ({
         ...prev,
         mode: 'global',
+        // stash current edits back into their scope before switching
+        projectAllowedTools: prev.mode === 'project' ? prev.allowedTools : prev.projectAllowedTools,
         allowedTools: prev.globalAllowedTools,
         isDirty: false,
       }));
@@ -126,6 +135,8 @@ export function App({ projectPath }: Props) {
       setState(prev => ({
         ...prev,
         mode: 'project',
+        // stash current edits back into their scope before switching
+        globalAllowedTools: prev.mode === 'global' ? prev.allowedTools : prev.globalAllowedTools,
         allowedTools: prev.projectAllowedTools,
         isDirty: false,
       }));
