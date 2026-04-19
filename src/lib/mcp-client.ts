@@ -21,18 +21,22 @@ export async function connectServer(name: string, config: McpServerConfig): Prom
     });
   }
 
-  const connectPromise = client.connect(transport);
-  const timeoutPromise = new Promise<never>((_, reject) =>
+  const operation = async () => {
+    await client.connect(transport);
+    const result = await client.listTools();
+    return (result.tools ?? []).map((t) => ({
+      name: t.name,
+      description: t.description,
+    }));
+  };
+
+  const timeout = new Promise<never>((_, reject) =>
     setTimeout(() => reject(new Error(`Timeout connecting to ${name}`)), TIMEOUT_MS)
   );
 
-  await Promise.race([connectPromise, timeoutPromise]);
-
-  const result = await client.listTools();
-  await client.close();
-
-  return (result.tools ?? []).map((t) => ({
-    name: t.name,
-    description: t.description,
-  }));
+  try {
+    return await Promise.race([operation(), timeout]);
+  } finally {
+    await client.close().catch(() => {});
+  }
 }
