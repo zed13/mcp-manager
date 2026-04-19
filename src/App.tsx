@@ -3,7 +3,7 @@ import { Box, Text, useInput, useApp, Key } from 'ink';
 import { ServerList } from './components/ServerList.js';
 import { ToolList } from './components/ToolList.js';
 import { StatusBar } from './components/StatusBar.js';
-import { readClaudeJson, getGlobalServers, getProjectServers, getAllowedTools, saveAllowedTools } from './lib/config.js';
+import { readClaudeJson, getGlobalServers, getProjectServers, getAllowedTools, getGlobalAllowedTools, saveAllowedTools, saveGlobalAllowedTools } from './lib/config.js';
 import { connectServer } from './lib/mcp-client.js';
 import type { AppState, McpServer } from './lib/types.js';
 
@@ -19,6 +19,8 @@ export function App({ projectPath }: Props) {
     projectPath,
     servers: [],
     allowedTools: [],
+    projectAllowedTools: [],
+    globalAllowedTools: [],
     selectedServerIndex: 0,
     focusedPanel: 'servers',
     isDirty: false,
@@ -61,7 +63,14 @@ export function App({ projectPath }: Props) {
         })),
       ];
 
-      setState((s: AppState) => ({ ...s, servers, allowedTools }));
+      const globalAllowedTools = getGlobalAllowedTools(config);
+      setState((s: AppState) => ({
+        ...s,
+        servers,
+        allowedTools: s.mode === 'global' ? globalAllowedTools : allowedTools,
+        projectAllowedTools: allowedTools,
+        globalAllowedTools,
+      }));
 
       for (const server of servers) {
         try {
@@ -102,12 +111,35 @@ export function App({ projectPath }: Props) {
     }
 
     if (input === 'q' || input === 'Q') { exit(); return; }
-    if (input === 'g' || input === 'G') { setState(prev => ({ ...prev, mode: 'global' })); return; }
-    if (input === 'p' || input === 'P') { setState(prev => ({ ...prev, mode: 'project' })); return; }
+
+    if (input === 'g' || input === 'G') {
+      setState(prev => ({
+        ...prev,
+        mode: 'global',
+        allowedTools: prev.globalAllowedTools,
+        isDirty: false,
+      }));
+      return;
+    }
+
+    if (input === 'p' || input === 'P') {
+      setState(prev => ({
+        ...prev,
+        mode: 'project',
+        allowedTools: prev.projectAllowedTools,
+        isDirty: false,
+      }));
+      return;
+    }
 
     if (input === 's' || input === 'S') {
-      saveAllowedTools(s.projectPath, s.allowedTools);
-      setState(prev => ({ ...prev, isDirty: false }));
+      if (s.mode === 'global') {
+        saveGlobalAllowedTools(s.allowedTools);
+        setState(prev => ({ ...prev, globalAllowedTools: prev.allowedTools, isDirty: false }));
+      } else {
+        saveAllowedTools(s.projectPath, s.allowedTools);
+        setState(prev => ({ ...prev, projectAllowedTools: prev.allowedTools, isDirty: false }));
+      }
       setStatusMessage('Saved!');
       setTimeout(() => setStatusMessage(''), 2000);
       return;

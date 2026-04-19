@@ -44,7 +44,9 @@ export interface AppState {
   mode: 'global' | 'project';
   projectPath: string;
   servers: McpServer[];
-  allowedTools: string[];
+  allowedTools: string[];         // active scope's tools (mirrors project or global)
+  projectAllowedTools: string[];  // persisted project scope
+  globalAllowedTools: string[];   // persisted global scope
   selectedServerIndex: number;
   focusedPanel: 'servers' | 'tools';
   isDirty: boolean;

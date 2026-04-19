@@ -23,6 +23,10 @@ export function getProjectServers(config: ClaudeJson, projectPath: string): Reco
   return config.projects?.[projectPath]?.mcpServers ?? {};
 }
 
+export function getGlobalAllowedTools(config: ClaudeJson): string[] {
+  return (config.allowedTools as string[] | undefined) ?? [];
+}
+
 export function getAllowedTools(config: ClaudeJson, projectPath: string): string[] {
   return config.projects?.[projectPath]?.allowedTools ?? [];
 }
@@ -35,5 +39,12 @@ export function saveAllowedTools(projectPath: string, tools: string[]): void {
   if (!parsed.projects[projectPath]) parsed.projects[projectPath] = {};
   parsed.projects[projectPath].allowedTools = tools;
 
+  fs.writeFileSync(CLAUDE_JSON_PATH, JSON.stringify(parsed, null, 2), 'utf-8');
+}
+
+export function saveGlobalAllowedTools(tools: string[]): void {
+  const raw = fs.readFileSync(CLAUDE_JSON_PATH, 'utf-8');
+  const parsed = JSON.parse(raw);
+  parsed.allowedTools = tools;
   fs.writeFileSync(CLAUDE_JSON_PATH, JSON.stringify(parsed, null, 2), 'utf-8');
 }
