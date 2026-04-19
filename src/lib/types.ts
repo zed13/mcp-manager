@@ -23,15 +23,15 @@ export interface McpServer {
   config: McpServerConfig;
   origin: 'global' | 'project';
   tools: McpTool[];
-  status: 'idle' | 'loading' | 'connected' | 'error';
+  status: 'loading' | 'connected' | 'error';
   error?: string;
 }
 
 export interface ProjectConfig {
-  mcpServers: Record<string, McpServerConfig>;
-  allowedTools: string[];
-  disabledMcpjsonServers: string[];
-  enabledMcpjsonServers: string[];
+  mcpServers?: Record<string, McpServerConfig>;
+  allowedTools?: string[];
+  disabledMcpjsonServers?: string[];
+  enabledMcpjsonServers?: string[];
 }
 
 export interface ClaudeJson {

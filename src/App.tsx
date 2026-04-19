@@ -94,11 +94,10 @@ export function App({ projectPath }: Props) {
         globalAllowedTools,
       }));
 
-      for (const server of servers) {
-        if (cancelled) break;
+      await Promise.all(servers.map(async (server) => {
         try {
           const tools = await connectServer(server.name, server.config);
-          if (cancelled) break;
+          if (cancelled) return;
           setState((s: AppState) => ({
             ...s,
             servers: s.servers.map((sv: McpServer) =>
@@ -108,7 +107,7 @@ export function App({ projectPath }: Props) {
             ),
           }));
         } catch (err) {
-          if (cancelled) break;
+          if (cancelled) return;
           const error = err instanceof Error ? err.message : String(err);
           setState((s: AppState) => ({
             ...s,
@@ -119,7 +118,7 @@ export function App({ projectPath }: Props) {
             ),
           }));
         }
-      }
+      }));
     }
     load();
     return () => { cancelled = true; };
